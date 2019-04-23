@@ -68,10 +68,15 @@ class Request {
 
 class Api {
   constructor() {}
-  getRiserateByDate({date}) {
+  getMovieList() {
     return new Request({
-      url: "/allRecords",
-      params: {date}
+      url: "/movie/list",
+    })
+  }
+  getMovieById({id}) {
+    return new Request({
+      url: "/movie/detail",
+      params: {id}
     })
   }
   updatePeriod({periodId, periodNum, startTime, restStartTime, restEndTime, endTime}) {
