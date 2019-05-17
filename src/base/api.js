@@ -68,6 +68,16 @@ class Request {
 
 class Api {
   constructor() {}
+  getTopTen() {
+    return new Request({
+      url: "/movie/top",
+    })
+  }
+  getTopScore(){
+    return new Request({
+      url: "/movie/topScore",
+    })
+  }
   getMovieList() {
     return new Request({
       url: "/movie/list",

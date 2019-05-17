@@ -1,48 +1,34 @@
 <template>
   <div id="app">
-  <el-menu
-    :default-active="activeIndex2"
-    class="el-menu-demo"
-    mode="horizontal"
-    @select="handleSelect"
-    background-color="#545c64"
-    text-color="#fff"
-    active-text-color="#ffd04b">
-    <el-menu-item index="1">票房预测</el-menu-item>
-    <el-submenu index="2">
-      <template slot="title">我的工作台</template>
-      <el-menu-item index="2-1">选项1</el-menu-item>
-      <el-menu-item index="2-2">选项2</el-menu-item>
-      <el-menu-item index="2-3">选项3</el-menu-item>
-      <el-submenu index="2-4">
-        <template slot="title">选项4</template>
-        <el-menu-item index="2-4-1">选项1</el-menu-item>
-        <el-menu-item index="2-4-2">选项2</el-menu-item>
-        <el-menu-item index="2-4-3">选项3</el-menu-item>
-      </el-submenu>
-    </el-submenu>
-    <el-menu-item index="3">消息中心</el-menu-item>
-    <el-menu-item index="4">影库</el-menu-item>
-  </el-menu>
+  <main-header></main-header>
   <el-container>
-    <el-header class="table-head" :md="16">本周( 2019-04-01~2019-04-07 )热映影片票房预测
+    <el-header class="table-head" :md="16">今日({{currentdate}})热映影片票房预测
     </el-header>
     <el-main :md="16">
     <table class="table table-hover">
       <thead>
         <tr>
           <th>电影名字</th>
-          <th>首映日期</th>
           <th>上映天数（天）</th>
-          <th>总计预测（万）</th>
+          <th>本周票房</th>
+          <th>当前累计票房</th>
+          <th>总计预测</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="tableData in tableDatas" :key="tableData">
-          <td>{{tableData.name}}</td>
-          <td>{{tableData.date}}</td>
+        <tr v-for="tableData in tableDatas" :key="tableData" v-show="tableData.days<30&&tableData.box_offic_predict.length>2">
+          <td>{{tableData.title}}</td>
           <td>{{tableData.days}}</td>
-          <td>{{tableData.number}}</td>
+          <td>{{tableData.box_offic_1w}}{{tableData.box_offic_all}}
+             <span v-if="parseFloat(tableData.box_offic_1w)>100">万</span>
+          <span v-else>亿</span>
+          </td>
+          <td>{{tableData.box_offic_all}}{{tableData.box_offic_all}}
+             <span v-if="parseFloat(tableData.box_offic_all)>100">万</span>
+          <span v-else>亿</span>
+          </td>
+          <td>{{tableData.box_offic_predict}}<span v-if="parseFloat(tableData.box_offic_predict)>100">万</span>
+          <span v-else>亿</span></td>
         </tr>
       </tbody>
     </table>
@@ -57,16 +43,22 @@
         <tr>
           <th>上映日期</th>
           <th>电影名字</th>
-          <th>总计预测（万）</th>
-          <th>实际统计（万）</th>
+          <th>总计预测</th>
+          <th>实际统计</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="tableData in tables" :key="tableData">
-          <td>{{tableData.date}}</td>
-          <td>{{tableData.name}}</td>
-          <td>{{tableData.number}}</td>
-          <td>{{tableData.actual}}</td>
+        <tr v-for="tableData in tables" :key="tableData" v-show="tableData.box_offic_predict.length>2&&tableData.days>30">
+          <td>{{tableData.releaseTime}}</td>
+          <td>{{tableData.title}}</td>
+          <td>{{tableData.box_offic_predict}}
+          <span v-if="parseFloat(tableData.box_offic_predict)>100">万</span>
+          <span v-else>亿</span>
+          </td>
+          <td>{{tableData.box_offic_all}}
+            <span v-if="parseFloat(tableData.box_offic_all)>100">万</span>
+            <span v-else>亿</span>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -77,90 +69,46 @@
 
 <script>
 import api from "../base/api.js"
+import Header from "./Header.vue"
 
 export default {
-  name: 'app',
+  components: {
+    "main-header": Header,
+  },
   data () {
     return {
-      activeIndex2: '1',
       isCollapse: true,
-      tableDatas: [{
-          date: '2016-05-02',
-          name: '王小虎',
-          days: '19',
-          number:'10',
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          days: '19',
-          number:'10',
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          days: '19',
-          number:'10',
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          days: '19',
-          number:'10',
-      }],
-      tables: [{
-          date: '2016-05-02',
-          name: '王小虎',
-          actual: '19',
-          number:'10',
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          actual: '19',
-          number:'10',
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          actual: '19',
-          number:'10',
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          actual: '19',
-          number:'10',
-      }],
+      currentdate:'',
+      tableDatas:'',
+      tables: '',
     }
   },
   mounted(){
+       //获取今日日期
+    var date = new Date();
+    var seperator1 = "-";
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    this.currentdate = year + seperator1 + month + seperator1 + strDate;
+    let self = this
     api.getMovieList()
     .onSuccess(function(resp){
       console.log(resp)
+      self.tables=resp.movies
+      self.tableDatas=resp.movies
     })
     .onFail(function(){
       console.log("error2")
     })
   },
   methods: {
-    handleSelect(key, keyPath) {
-      console.log(key, keyPath);
-      if(key==4){
-        this.activeIndex2=4;
-        location.replace("/html/movieList.html");
-
-      }
-      if(key==3){
-        this.activeIndex2=3;
-        location.href="/html/movieList.html";
-
-      }
-      if(key==2){
-        this.activeIndex2=2;
-        location.href="/html/movieList.html";
-
-      }
-      if(key==1){
-        this.activeIndex2=1;
-        location.href="/html/index.html";
-
-      }
-    },
   }
 }
 </script>

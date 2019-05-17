@@ -11,6 +11,7 @@ module.exports = {
     "detail":path.join(entryDir,"detail.js"),
     "movieList":path.join(entryDir,"movieList.js"),
     "viewer":path.join(entryDir,"viewer.js"),
+    "analyze":path.join(entryDir,"analyze.js"),
     "vendor":["vue", "element-ui","echarts",path.join(baseDir, "util.js"),path.join(baseDir, "api.js")],
   },
   output: {

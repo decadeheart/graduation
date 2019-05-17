@@ -1,29 +1,6 @@
 <template>
 <div id="app">
-  <el-menu
-    :default-active="activeIndex2"
-    class="el-menu-demo"
-    mode="horizontal"
-    @select="handleSelect"
-    background-color="#545c64"
-    text-color="#fff"
-    active-text-color="#ffd04b">
-    <el-menu-item index="1">票房预测</el-menu-item>
-    <el-submenu index="2">
-      <template slot="title">我的工作台</template>
-      <el-menu-item index="2-1">选项1</el-menu-item>
-      <el-menu-item index="2-2">选项2</el-menu-item>
-      <el-menu-item index="2-3">选项3</el-menu-item>
-      <el-submenu index="2-4">
-        <template slot="title">选项4</template>
-        <el-menu-item index="2-4-1">选项1</el-menu-item>
-        <el-menu-item index="2-4-2">选项2</el-menu-item>
-        <el-menu-item index="2-4-3">选项3</el-menu-item>
-      </el-submenu>
-    </el-submenu>
-    <el-menu-item index="3">消息中心</el-menu-item>
-    <el-menu-item index="4">影库</el-menu-item>
-  </el-menu>
+  <main-header></main-header>
   <div class="main container">
     <div class="col-md-12 search">
       <div class="col-md-3">
@@ -37,7 +14,7 @@
         </el-select>
       </div>
       <div class="col-md-3">
-        <el-select v-model="value8" filterable placeholder="类型">
+        <el-select v-model="value9" filterable placeholder="类型">
           <el-option
             v-for="item in types"
             :key="item.value"
@@ -46,26 +23,31 @@
           </el-option>
         </el-select>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-3 input-wrapper">
         <el-input
           size="medium"
           placeholder="搜索"
           prefix-icon="el-icon-search"
           v-model="input21">
         </el-input>
+        <el-button icon="el-icon-search" circle></el-button>
       </div>
     </div>
     <div class="col-md-12 movie-item" v-for="movie in movies" :key="movie" @click="chooseMovie(movie)">
       <div class="col-md-3">
-        <img :src="movie.address" style="height:80px">
+        <img :src="movie.imgUrl" style="height:80px">
       </div>
-      <div class="col-md-5">
+      <div class="col-md-3">
         <div class="movie-name">
           {{movie.title}}
         </div>
         <div class="movie-enName">
-          {{movie.englishTitle}}￥票房：{{movie.grade}}
+          ￥票房：{{movie.box_offic_all}}<span v-if="parseFloat(movie.box_offic_all)>100">万</span>
+          <span v-else>亿</span>
         </div>
+      </div>
+      <div class="col-md-2">
+        <div class="type">{{movie.types}}</div>
       </div>
     </div>
   </div>
@@ -74,12 +56,14 @@
 
 <script>
 import api from "../base/api.js"
+import Header from "./Header.vue"
 
 export default {
-  name: 'app',
+  components: {
+    "main-header": Header,
+  },
   data () {
     return {
-      activeIndex2: '1',
       isCollapse: true,
       movies:'',
       options: [{
@@ -98,20 +82,24 @@ export default {
         value: '选项5',
         label: '日本'
       }],
-      types:[
-        {value:"1",
-        leble:'动作',
-        },
-        {
-          value:'2',
-          lable:'喜剧',
-        },
-        {
-          value:'3',
-          lable:'纪录片'
-        }
-      ],
+      types:[{
+        value: '选项1',
+        label: '动作'
+      }, {
+        value: '选项2',
+        label: '爱情'
+      }, {
+        value: '选项3',
+        label: '喜剧'
+      }, {
+        value: '选项4',
+        label: '战争'
+      }, {
+        value: '选项5',
+        label: '科幻'
+      }],
       value8: '',
+      value9: '',
       input21:'',
     }
   },
@@ -127,29 +115,6 @@ export default {
     })
   },
   methods: {
-    handleSelect(key, keyPath) {
-      console.log(key, keyPath);
-      if(key==4){
-        this.activeIndex2=4;
-        location.replace("/html/movieList.html");
-
-      }
-      if(key==3){
-        this.activeIndex2=3;
-        location.href="/html/movieList.html";
-
-      }
-      if(key==2){
-        this.activeIndex2=2;
-        location.href="/html/movieList.html";
-
-      }
-      if(key==1){
-        this.activeIndex2=1;
-        location.href="/html/index.html";
-
-      }
-    },
     chooseMovie(movie){
       location.href=`/html/detail.html?movieId=${movie.id}`
     }
@@ -225,5 +190,14 @@ body{
   height: 60px;
   border-bottom: 1px solid #999;
   padding: 10px 0;
+}
+.type{
+  height: 80px;
+  vertical-align: center;
+  line-height: 80px;
+}
+.input-wrapper{
+  display: flex;
+  flex-wrap: nowrap;
 }
 </style>
